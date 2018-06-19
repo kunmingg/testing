@@ -2,6 +2,7 @@
 
 import datetime
 import logging
+from retrying import retry
 import time
 
 from kubernetes import client as k8s_client
@@ -15,11 +16,20 @@ KIND = "Workflow"
 
 def log_status(workflow):
   """A callback to use with wait_for_workflow."""
-  logging.info("Workflow %s in namespace %s; phase=%s",
-           workflow["metadata"]["name"],
-           workflow["metadata"]["namespace"],
-           workflow["status"]["phase"])
+  try:
+    logging.info("Workflow %s in namespace %s; phase=%s",
+                 workflow["metadata"]["name"],
+                 workflow["metadata"]["namespace"],
+                 workflow["status"]["phase"])
+  except KeyError as e:
+    # Ignore the error and just log the stacktrace
+    # as sometimes the workflow object does not have all the fields
+    # https://github.com/kubeflow/testing/issues/147
+    logging.exception('KeyError: %s', e)
 
+
+@retry(stop_max_attempt_number=3, wait_fixed=2000,
+       retry_on_exception=lambda e: not isinstance(e, util.TimeoutError))
 def wait_for_workflows(client, namespace, names,
                       timeout=datetime.timedelta(minutes=30),
                       polling_interval=datetime.timedelta(seconds=30),
@@ -56,7 +66,9 @@ def wait_for_workflows(client, namespace, names,
 
     done = True
     for results in all_results:
-      if results["status"]["phase"] not in ["Failed", "Succeeded"]:
+      # Sometimes it takes a while for the argo controller to populate
+      # the status field of an object.
+      if results.get("status", {}).get("phase", "") not in ["Failed", "Succeeded"]:
         done = False
 
     if done:

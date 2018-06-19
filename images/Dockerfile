@@ -91,9 +91,9 @@ RUN cd /tmp && \
 # Install ksonnet
 RUN cd /tmp && \
     wget -O ks.tar.gz \
-    https://github.com/ksonnet/ksonnet/releases/download/v0.10.2/ks_0.10.2_linux_amd64.tar.gz && \
+    https://github.com/ksonnet/ksonnet/releases/download/v0.11.0/ks_0.11.0_linux_amd64.tar.gz && \
     tar -xvf ks.tar.gz && \
-    mv ks_0.10.2_linux_amd64/ks /usr/local/bin && \
+    mv ks_0.11.0_linux_amd64/ks /usr/local/bin && \
     chmod a+x /usr/local/bin/ks
 
 RUN cd /tmp && \
@@ -111,10 +111,10 @@ COPY ./Pipfile ./Pipfile.lock /tmp/
 # Don't upgrade pip for now because it seems to be broken
 # https://github.com/pypa/pip/issues/5240
 RUN cd /tmp/ && \
-    pip2 install -U wheel && \
+    pip2 install -U wheel filelock && \
     pip2 install pipenv && \
     pipenv install --system --two && \
-    pip3 install -U wheel && \
+    pip3 install -U wheel filelock && \
     pip3 install pipenv && \
     pipenv install --system --three
 

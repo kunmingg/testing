@@ -66,6 +66,7 @@ ks pkg install kubeflow/core@${VERSION}
 ks pkg install kubeflow/tf-serving@${VERSION}
 ks pkg install kubeflow/tf-job@${VERSION}
 ks pkg install kubeflow/seldon@${VERSION}
+ks pkg install kubeflow/katib@${VERSION}
 
 # Create templates for core components
 ks generate kubeflow-core kubeflow-core
@@ -79,6 +80,9 @@ ks generate iap-ingress iap-ingress --namespace=${NAMESPACE} \
        --ipName=${IP_NAME} \
        --hostname="${FQDN}" \
        --oauthSecretName="kubeflow-oauth"
+
+# Create katib components
+ks generate katib katib
 
 ks param set kubeflow-core jupyterHubAuthenticator iap
 
@@ -96,7 +100,7 @@ ks param set kubeflow-core usageId ${USAGE_ID}
 ks param set kubeflow-core disks github-issues-data --env=default
 
 # Enable a PVC backed by the default StorageClass
-ks param set kubeflow-core jupyterNotebookPVCMount /home/jovyan
+ks param set kubeflow-core jupyterNotebookPVCMount /home/jovyan --env=default
 
 # Checkout files that are manually created from the master branch.
 # Since we restore params.libsonnet we restore all values of params
