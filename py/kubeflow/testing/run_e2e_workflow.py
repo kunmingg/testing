@@ -31,6 +31,8 @@ as a command line argument.
 import argparse
 import datetime
 import logging
+from time import sleep
+
 from kubernetes import client as k8s_client
 import os
 import tempfile
@@ -118,6 +120,11 @@ def run(args, file_handler): # pylint: disable=too-many-statements,too-many-bran
   ui_urls = {}
 
   for w in workflows:
+    print("workflow app dir: " + w.app_dir)
+    if "pytorch" in w.name:
+      print("SSLLEEEEPP...")
+      sleep(1000)
+
     # Create the name for the workflow
     # We truncate sha numbers to prevent the workflow name from being too large.
     # Workflow name should not be more than 63 characters because its used
